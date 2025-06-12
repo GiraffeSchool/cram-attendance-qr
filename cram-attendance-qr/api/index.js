@@ -93,7 +93,7 @@ async function pushMessage(to, messages) {
 }
 
 // ===== LINE Webhook 處理（家長加好友時自動回傳 User ID）=====
-app.post('/webhook', async (req, res) => {  // 改成 /webhook
+app.post('/webhook', async (req, res) => {
   console.log('收到 LINE Webhook');
   
   // 驗證簽名
@@ -142,7 +142,7 @@ app.post('/webhook', async (req, res) => {  // 改成 /webhook
 });
 
 // ===== /attend 接收簽到請求（包含發送 LINE 通知）=====
-app.get('/attend', async (req, res) => {  // 改成 /attend
+app.get('/attend', async (req, res) => {
   console.log('=== 收到簽到請求 ===');
   
   try {
@@ -368,7 +368,7 @@ app.get('/attend', async (req, res) => {  // 改成 /attend
 });
 
 // ===== 健康檢查 =====
-app.get('/', (req, res) => {  // 改成 /
+app.get('/', (req, res) => {
   res.json({ 
     status: 'ok', 
     message: '育名補習班簽到系統運行中',
@@ -377,5 +377,14 @@ app.get('/', (req, res) => {  // 改成 /
   });
 });
 
-// 導出給 Vercel
-module.exports = app;
+// 導出給 Vercel - 這是關鍵修改！
+export default async function handler(req, res) {
+  return new Promise((resolve, reject) => {
+    app(req, res, (result) => {
+      if (result instanceof Error) {
+        return reject(result);
+      }
+      return resolve(result);
+    });
+  });
+}
