@@ -93,7 +93,7 @@ async function pushMessage(to, messages) {
 }
 
 // ===== LINE Webhook 處理（家長加好友時自動回傳 User ID）=====
-app.post('/api/webhook', async (req, res) => {
+app.post('/webhook', async (req, res) => {  // 改成 /webhook
   console.log('收到 LINE Webhook');
   
   // 驗證簽名
@@ -121,33 +121,20 @@ app.post('/api/webhook', async (req, res) => {
         },
         {
           type: 'text',
-          text: '設定完成後，當您的孩子簽到時，您將會收到即時通知。\n\n如需再次查詢您的 User ID，請輸入「我的ID」。'
+          text: '請將上面的 ID 提供給補習班老師進行設定。\n\n設定完成後，當您的孩子簽到時，您將會在此收到通知。'
         }
       ]);
     }
     
-    // 處理文字訊息
+    // 處理文字訊息 - 不回應任何訊息
     if (event.type === 'message' && event.message.type === 'text') {
       const userId = event.source.userId;
       const text = event.message.text.trim();
-      const replyToken = event.replyToken;
       
-      console.log('收到訊息:', text, 'from', userId);
+      console.log(`💬 收到訊息: "${text}" from ${userId}`);
+      console.log('（不回應一般訊息，User ID 已在加好友時提供）');
       
-      // 查詢 User ID
-      if (text === '我的ID' || text === 'ID' || text === 'id' || text === '我的id') {
-        await replyMessage(replyToken, [{
-          type: 'text',
-          text: `您的 LINE User ID 是：\n${userId}\n\n請將此 ID 提供給補習班老師。`
-        }]);
-      }
-      // 說明功能
-      else if (text === '說明' || text === '功能' || text === 'help') {
-        await replyMessage(replyToken, [{
-          type: 'text',
-          text: '育名補習班點名通知系統\n\n功能說明：\n1. 輸入「我的ID」查詢您的 User ID\n2. 將 User ID 提供給老師\n3. 設定完成後會收到孩子的簽到通知\n\n如有問題請聯絡補習班。'
-        }]);
-      }
+      // 不做任何回應
     }
   }
   
@@ -155,7 +142,7 @@ app.post('/api/webhook', async (req, res) => {
 });
 
 // ===== /attend 接收簽到請求（包含發送 LINE 通知）=====
-app.get('/api/attend', async (req, res) => {
+app.get('/attend', async (req, res) => {  // 改成 /attend
   console.log('=== 收到簽到請求 ===');
   
   try {
@@ -381,11 +368,11 @@ app.get('/api/attend', async (req, res) => {
 });
 
 // ===== 健康檢查 =====
-app.get('/api', (req, res) => {
+app.get('/', (req, res) => {  // 改成 /
   res.json({ 
     status: 'ok', 
     message: '育名補習班簽到系統運行中',
-    endpoints: ['/api/attend', '/api/webhook'],
+    endpoints: ['/attend', '/webhook'],
     timestamp: new Date().toISOString()
   });
 });
